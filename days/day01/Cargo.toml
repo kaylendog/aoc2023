@@ -1,0 +1,15 @@
+[package]
+name = "day01"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+regex = "1"
+
+[[bin]]
+name = "parta"
+path = "src/parta.rs"
+
+[[bin]]
+name = "partb"
+path = "src/partb.rs"
