@@ -26,6 +26,8 @@ pub(crate) fn process_word<S: AsRef<str>>(content: S) -> u64 {
     }
 }
 
+/// Forward and backward pass method - does a fair amount
+/// of backtracking - will speed up with RadixTree eventually.
 fn part2<P: AsRef<Path>>(path: P) -> u64 {
     let lines = BufReader::new(File::open(path.as_ref()).unwrap()).lines();
     let words = HashSet::from([
