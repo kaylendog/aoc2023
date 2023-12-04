@@ -7,8 +7,8 @@ use crate::{Input, Parser};
 /// A parser that allows for sequencing of two child parsers.
 #[derive(Clone)]
 pub struct Then<A, B> {
-    pub a: A,
-    pub b: B,
+    pub(crate) a: A,
+    pub(crate) b: B,
 }
 
 impl<'a, A, B, I, OA, OB> Parser<'a, I, (OA, OB)> for Then<A, B>
@@ -26,7 +26,7 @@ where
 /// A parser that allows for optional parsing using its child parser.
 #[derive(Clone)]
 pub struct Maybe<P> {
-    pub parser: P,
+    pub(crate) parser: P,
 }
 
 impl<'a, I, O, P> Parser<'a, I, Option<O>> for Maybe<P>
@@ -43,8 +43,8 @@ where
 
 /// A parser that allows for repeated parsing using its child parser.
 pub struct Repeated<P, O> {
-    pub parser: P,
-    pub __phantom: PhantomData<O>,
+    pub(crate) parser: P,
+    pub(crate) __phantom: PhantomData<O>,
 }
 
 impl<P: Clone, O> Clone for Repeated<P, O> {
@@ -71,9 +71,9 @@ where
 
 /// A parser that allows for repeated parsing using its child parser a fixed number of times.
 pub struct Repeat<P, O> {
-    pub count: usize,
-    pub parser: P,
-    pub __phantom: PhantomData<O>,
+    pub(crate) count: usize,
+    pub(crate) parser: P,
+    pub(crate) __phantom: PhantomData<O>,
 }
 
 impl<P, O> Clone for Repeat<P, O>
@@ -105,8 +105,8 @@ where
 /// A parser that first tries to parse with `a`, then `b`.
 #[derive(Clone)]
 pub struct Or<A, B> {
-    pub a: A,
-    pub b: B,
+    pub(crate) a: A,
+    pub(crate) b: B,
 }
 
 impl<'a, A, B, I, O> Parser<'a, I, O> for Or<A, B>
@@ -119,12 +119,12 @@ where
     }
 }
 
-/// A parser that allows for the folding of a sequence of values.
+/// See [Parser::foldl].
 #[derive(Copy)]
-struct Foldl<P, F, O> {
-    parser: P,
-    f: F,
-    __phantom: PhantomData<O>,
+pub struct Foldl<P, F, O> {
+    pub(crate) parser: P,
+    pub(crate) f: F,
+    pub(crate) __phantom: PhantomData<O>,
 }
 
 impl<P, F, O> Clone for Foldl<P, F, O>
@@ -158,10 +158,11 @@ where
     }
 }
 
+/// See [Parser::delimited_by].
 #[derive(Clone)]
 pub struct DelimitedBy<A, D> {
-    pub item: A,
-    pub delimiter: D,
+    pub(crate) item: A,
+    pub(crate) delimiter: D,
 }
 
 impl<'a, A, D, I, O> Parser<'a, I, Vec<O>> for DelimitedBy<A, D>

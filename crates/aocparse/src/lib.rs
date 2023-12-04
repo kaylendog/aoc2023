@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 
-use combinator::{DelimitedBy, Maybe, Or, Repeated, Then};
+use combinator::{DelimitedBy, Foldl, Maybe, Or, Repeated, Then};
 use primitive::{Ignored, Map, To};
 
 mod primitive;
@@ -10,10 +10,20 @@ mod primitive;
 pub mod combinator;
 pub mod text;
 
+/// The input for a parser.
+///
+/// This is a generic data structure, currently able to accept string slices
+/// as input.
+///
+/// # Example
+/// ```
+/// let input = "1234567890";
+/// parser.parse(input.into());
+/// ```
 pub struct Input<'a, I> {
-    pos: usize,
-    source: I,
-    __phantom: PhantomData<&'a I>,
+    pub(crate) pos: usize,
+    pub(crate) source: I,
+    pub(crate) __phantom: PhantomData<&'a I>,
 }
 
 impl<'a> From<&'a str> for Input<'a, &'a str> {
@@ -27,6 +37,9 @@ impl<'a> From<&'a str> for Input<'a, &'a str> {
 }
 
 /// A trait for parsing input into a desired output.
+/// 
+/// This trait provides many combinators for parsing input into a desired output, and thus
+/// you should not need to implement this trait yourself.
 pub trait Parser<'a, I, O>: Clone {
     /// Ignore the result of the parser.
     fn ignored(self) -> Ignored<Self, O>
@@ -101,6 +114,10 @@ pub trait Parser<'a, I, O>: Clone {
         }
     }
 
+    /// Repeat this parser a fixed number of times.
+    ///
+    /// This is useful for parsing a sequence of tokens separated by some delimiter. For example,
+    /// many programming languages use commas to separate tokens.
     fn delimited_by<D>(self, delimiter: D) -> DelimitedBy<Self, D>
     where
         Self: Sized,
@@ -111,8 +128,36 @@ pub trait Parser<'a, I, O>: Clone {
         }
     }
 
+    /// Fold the output of this parser using the given function.
+    ///
+    /// This can be used to combine the results from a sequences of parsers, or the result
+    /// of a parser like [Parser::repeated].
+    fn foldl<F>(self, f: F) -> Foldl<Self, F, O>
+    where
+        F: Fn(O, O) -> O,
+    {
+        Foldl {
+            parser: self,
+            f,
+            __phantom: PhantomData,
+        }
+    }
+
     /// Parse the given input.
     fn parse(&self, input: &mut Input<'a, I>) -> Result<O, ()>;
+
+    /// Parse the given string.
+    fn parse_str(&self, input: &'a str) -> Result<O, ()>
+    where
+        Self: Parser<'a, &'a str, O>,
+    {
+        let mut input = Input {
+            pos: 0,
+            source: input,
+            __phantom: PhantomData,
+        };
+        self.parse(&mut input)
+    }
 }
 
 /// Provides the ability to treat boxed parsers as if they were not boxed.

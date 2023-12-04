@@ -1,8 +1,10 @@
+//! Utility module defining methods for parsing plain text.
+
 use std::{marker::PhantomData, str::FromStr};
 
 use crate::{combinator::Repeated, Input, Parser};
 
-/// A parser that matches individual tokens.
+/// See [`just`].
 #[derive(Clone, Copy)]
 struct Just {
     token: &'static str,
@@ -19,7 +21,18 @@ impl<'a> Parser<'a, &'a str, ()> for Just {
     }
 }
 
-/// Returns a parser that matches the given token.
+/// A parser that matches a single instance of the given token.
+///
+/// This can be used in combination with [`Parser::repeated`] to parse a sequence
+/// of one or more instances of the given token.
+///
+/// # Example
+///
+/// ```
+/// let parser = just("hello").then(repeated(just("world")));
+/// let input = "helloworldworld";
+/// parser.parse(input.into());
+/// ```
 pub fn just<'a>(token: &'static str) -> impl Parser<'a, &'a str, ()> {
     Just { token }
 }
@@ -46,7 +59,7 @@ pub fn one_of<'a>(tokens: &'static [&'static str]) -> impl Parser<'a, &'a str, &
     OneOf { tokens }
 }
 
-/// A parser that verifies that the input contains exclusively ASCII characters.
+/// See [`ascii`].
 #[derive(Clone, Copy)]
 pub struct Ascii;
 
@@ -74,11 +87,12 @@ impl<'a> Parser<'a, &'a str, &'a str> for Ascii {
     }
 }
 
-/// A parser that verifies that the input contains exclusively ASCII characters.
+/// A parser that matches one or more ASCII characters.
 pub fn ascii<'a>() -> impl Parser<'a, &'a str, &'a str> {
     Ascii
 }
 
+/// See [`number`].
 #[derive(Clone, Copy)]
 pub struct Number<T> {
     pub radix: T,
@@ -153,7 +167,15 @@ signed_number_impl!(i32);
 signed_number_impl!(i64);
 signed_number_impl!(i128);
 
-/// Returns a parser that parses a number in the given radix.
+/// A parser that matches a number in the given radix.
+///
+/// This parser is generic, and is capable of parsing numbers into all signed and
+/// unsigned integer primitives.
+///
+/// # Example
+/// ```
+/// let integer = number::<u32>();
+/// ```
 pub fn number<T>(radix: T) -> Number<T>
 where
     T: FromStr,
