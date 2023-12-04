@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-pub(crate) fn process_word<S: AsRef<str>>(content: S) -> u64 {
+fn process_word<S: AsRef<str>>(content: S) -> u64 {
     let content = content.as_ref();
     // single digit
     if content.len() == 1 {
