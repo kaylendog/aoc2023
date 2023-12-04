@@ -1,4 +1,7 @@
 //! Generic parsing utilities for Advent of Code.
+//!
+//! This crate is heavily inspired by the [chumsky](https://github.com/zesterer/chumsky) crate, being 
+//! a parser combinator library.
 
 use std::marker::PhantomData;
 
@@ -37,7 +40,7 @@ impl<'a> From<&'a str> for Input<'a, &'a str> {
 }
 
 /// A trait for parsing input into a desired output.
-/// 
+///
 /// This trait provides many combinators for parsing input into a desired output, and thus
 /// you should not need to implement this trait yourself.
 pub trait Parser<'a, I, O>: Clone {
